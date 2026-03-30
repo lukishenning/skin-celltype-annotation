@@ -13,6 +13,7 @@ This pipeline performs reference-based cell type annotation on human skin scRNA-
 - Comprehensive visualizations (UMAP, composition, markers)
 - Support for both GA (diseased) and Healthy skin comparisons
 - Integration with Seurat v5
+- Subset analysis for specific cell populations (e.g., APCs)
 
 ## Requirements
 
@@ -70,9 +71,11 @@ run_reference_annotation(
 )
 ```
 
-## Workflow
+## Workflows
 
-The pipeline consists of these steps:
+### Workflow 1: Reference-Based Cell Type Annotation
+
+The main pipeline consists of these steps:
 
 1. **Load Reference**: Read h5ad file and convert to Seurat
 2. **Prepare Reference**: Normalize, find variable features, scale, PCA, UMAP
@@ -82,8 +85,26 @@ The pipeline consists of these steps:
 6. **Visualize**: Generate UMAPs, composition plots, marker validation
 7. **Save Results**: Export annotated object and summary statistics
 
+### Workflow 2: APC (Antigen-Presenting Cell) Subset Analysis
+
+After the main annotation, you can perform focused analysis on specific cell populations:
+
+```r
+source("R/APC_analysis.R")
+```
+
+This script:
+1. Subsets APCs (DC1, DC2, LC, MigDC, Macro_1, Macro_2, Inf_mac, Mono_mac, moDC)
+2. Re-normalizes and finds variable features
+3. Re-clusters at multiple resolutions (0.2, 0.4, 0.6, 0.8)
+4. Generates UMAP visualizations
+5. Identifies cluster markers
+6. Compares GA vs Healthy composition
+7. Validates APC-specific markers
+
 ## Output Files
 
+### Main Annotation
 | File | Description |
 |------|-------------|
 | `seurat_annotated_reference.rds` | Query object with predicted cell types |
@@ -93,6 +114,21 @@ The pipeline consists of these steps:
 | `reference_celltype_composition.pdf` | Cell type proportions |
 | `reference_celltype_composition.csv` | Raw composition data |
 | `reference_dotplot.pdf` | Marker validation dotplot |
+
+### APC Analysis
+| File | Description |
+|------|-------------|
+| `APC_seurat.rds` | APC subset Seurat object |
+| `APC_umap_clusters.pdf` | UMAP with clusters, labels, and condition |
+| `APC_umap_by_condition.pdf` | UMAP split by condition |
+| `APC_cluster_markers.csv` | Top markers per cluster |
+| `APC_celltype_by_cluster.csv` | Cell type composition per cluster |
+| `APC_celltype_composition.pdf` | Bar plot of composition |
+| `APC_marker_expression.pdf` | Feature plots of APC markers |
+| `APC_dotplot.pdf` | Marker expression dotplot |
+| `APC_GA_vs_Healthy.pdf` | GA vs Healthy comparison |
+| `APC_GA_vs_Healthy_counts.csv` | Raw cell counts |
+| `APC_GA_vs_Healthy_percentage.csv` | Percentages |
 
 ## Cell Types Annotated
 
@@ -110,12 +146,26 @@ The pipeline identifies these cell types from Reynolds 2021:
 
 ## Example Results
 
-### Composition by Condition
+### Overall Composition by Condition
 GA skin shows:
 - Expansion of inflammatory fibroblasts (F2) and macrophages (Macro_1)
 - Increased T cell infiltration (Tc: 8x, Treg: 3x)
 - Plasma cell expansion (40x higher)
 - Decreased melanocytes and ILC populations
+
+### APC Composition by Condition
+- **Macro_1** dramatically expanded in GA (53.5% vs 8.4%)
+- **DC2** cells reduced in GA (7% vs 35.8%)
+- **moDC** enriched in healthy skin
+
+### APC Cluster Markers
+| Cluster | Key Markers | Likely Identity |
+|---------|-------------|----------------|
+| C5 | CD1C, FCER1A, CLEC10A | cDC2 |
+| C11 | XCR1, CLEC9A | cDC1 |
+| C13 | LAMP3, IDO2 | mregDC/MigDC |
+| C18 | CD207, EPCAM | Langerhans cells |
+| C9 | CCL18, CCL13, CD209 | M2-like macrophages |
 
 ### Prediction Confidence
 - Mean score: 0.80
