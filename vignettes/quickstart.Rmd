@@ -1,0 +1,134 @@
+---
+title: "Quick Start Guide"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Quick Start Guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Overview
+
+This vignette demonstrates how to use the `skinCellTypeAnnotation` pipeline to annotate your scRNA-seq data using the Reynolds 2021 human skin cell atlas reference.
+
+## Installation
+
+```r
+# Clone the repository
+git clone https://github.com/lukishenning/skin-celltype-annotation.git
+
+# Or install as R package (when available on CRAN/bioc)
+# devtools::install_github("lukishenning/skin-celltype-annotation")
+```
+
+## Required Data
+
+### Reference Data
+Download the Reynolds 2021 reference from Zenodo:
+- URL: https://zenodo.org/record/4569496
+- File: `healthy.h5ad` (~1.2 GB)
+
+### Query Data
+Prepare your integrated Seurat object with:
+- Normalized expression data
+- Metadata including a `condition` column
+- Properly formatted cell/gene names
+
+## Usage
+
+### Basic Usage
+
+```r
+library(Seurat)
+
+# Load the annotation function
+source("R/run_annotation.R")
+
+# Run annotation
+annotated <- run_reference_annotation(
+  query_file = "path/to/your/query.rds",
+  reference_file = "path/to/healthy.h5ad",
+  output_dir = "path/to/output"
+)
+```
+
+### With Custom Parameters
+
+```r
+annotated <- run_reference_annotation(
+  query_file = "data/query_integrated.rds",
+  reference_file = "data/reference/healthy.h5ad",
+  output_dir = "results",
+  n_hvg = 2000,      # Number of variable features
+  n_pcs = 30,        # Number of PCA dimensions
+  k_anchor = 20,     # Number of anchors to find
+  k_score = 30       # Number of neighbors for scoring
+)
+```
+
+## Output Files
+
+| File | Description |
+|------|-------------|
+| `seurat_annotated_reference.rds` | Your query object with cell type predictions |
+| `reference_celltypes.pdf` | UMAP of the reference cell types |
+| `reference_annotation_results.pdf` | Query UMAP with predictions + condition |
+| `reference_annotation_by_condition.pdf` | Split UMAP by condition |
+| `reference_celltype_composition.pdf` | Cell type proportions bar plots |
+| `reference_celltype_composition.csv` | Raw composition data |
+| `reference_prediction_violin.pdf` | Prediction confidence by cell type |
+| `reference_dotplot.pdf` | Marker gene expression dotplot |
+
+## Accessing Results
+
+```r
+# Load annotated object
+annotated <- readRDS("results/seurat_annotated_reference.rds")
+
+# View predicted cell types
+table(annotated$predicted.id)
+
+# View by condition
+table(annotated$predicted.id, annotated$condition)
+
+# View prediction confidence
+summary(annotated$prediction.score.max)
+
+# Find low confidence cells
+low_confidence <- annotated[, annotated$prediction.score.max < 0.5]
+table(low_confidence$predicted.id)
+```
+
+## Customizing Annotations
+
+If you want to merge or rename cell types:
+
+```r
+# Merge similar cell types
+annotated$celltype_custom <- annotated$predicted.id
+annotated$celltype_custom <- gsub("F1|F2|F3", "Fibroblasts", annotated$celltype_custom)
+annotated$celltype_custom <- gsub("Macro_1|Macro_2|Inf_mac", "Macrophages", annotated$celltype_custom)
+
+# Re-plot
+Seurat::DimPlot(annotated, group.by = "celltype_custom", label = TRUE)
+```
+
+## Troubleshooting
+
+### Memory Issues
+If you run out of memory:
+- Reduce `n_hvg` to 1000
+- Process samples in batches
+- Use a machine with more RAM (64GB+ recommended)
+
+### Low Prediction Scores
+Cells with low confidence may:
+- Be rare cell types not in reference
+- Represent novel disease states
+- Need additional QC filtering
+
+### Session Info
+
+```r
+sessionInfo()
+```

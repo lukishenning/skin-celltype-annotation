@@ -1,0 +1,22 @@
+Package: skinCellTypeAnnotation
+Title: Reference-Based Cell Type Annotation for Human Skin scRNA-seq
+Version: 1.0.0
+Authors@R: c(
+    person("Lukas", "Henning", email = "lukas@example.com", role = c("aut", "cre"))
+  )
+Description: Automated cell type annotation pipeline for human skin scRNA-seq data
+    using the Reynolds et al. 2021 human skin cell atlas reference. Performs 
+    reference-based label transfer to annotate query datasets with 34+ cell types.
+Depends: R (>= 4.2.0)
+License: MIT
+Encoding: UTF-8
+Imports: 
+    Seurat (>= 5.0.0),
+    anndata (>= 0.10.0),
+    dplyr,
+    ggplot2
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 7.2.3

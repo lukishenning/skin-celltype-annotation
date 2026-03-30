@@ -1,0 +1,32 @@
+name: R-CMD-check
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  R-CMD-check:
+    runs-on: ubuntu-latest
+    container: rocker/verse:4.3.1
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          install.packages(c("Seurat", "hdf5r", "anndata", "dplyr", "ggplot2", "devtools"))
+      
+      - name: Check package
+        run: |
+          # Check R code for syntax errors
+          Rscript -e "library(methods); source('R/run_annotation.R'); print('Syntax OK')"
+      
+      - name: Style check
+        if: false
+        run: |
+          Rscript -e "styler::style_dir('.')"

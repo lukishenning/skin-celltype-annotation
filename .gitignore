@@ -1,0 +1,40 @@
+# R
+.Rhistory
+.RData
+.Ruserdata
+*.rds
+*.Rds
+
+# Packages
+*.tar.gz
+*.zip
+
+# Data
+data/
+!data/.gitkeep
+*.h5ad
+*.h5
+
+# Results
+results/
+output/
+*.pdf
+*.png
+!.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temporary
+tmp/
+temp/
